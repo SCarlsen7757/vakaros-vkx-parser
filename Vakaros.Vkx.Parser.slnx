@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Vakaros.Vkx.Parser/Vakaros.Vkx.Parser.csproj" />
+  <Project Path="Vakaros.Vkx.Parser.Tests/Vakaros.Vkx.Parser.Tests.csproj" />
+</Solution>
