@@ -1,4 +1,4 @@
-namespace Vakaros.Vkx.Parser.Models;
+namespace Vakaros.Vkx.Parser.NET.Models;
 
 /// <summary>
 /// 0x08 — Device configuration record.

@@ -1,4 +1,4 @@
-namespace Vakaros.Vkx.Parser.Models;
+namespace Vakaros.Vkx.Parser.NET.Models;
 
 /// <summary>
 /// 0x05 — Line Position. Logged when the user sets the pin or boat end of the start line.

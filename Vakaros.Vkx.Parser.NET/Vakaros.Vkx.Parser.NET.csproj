@@ -6,16 +6,16 @@
     <Nullable>enable</Nullable>
 
     <!-- NuGet packaging -->
-    <PackageId>Vakaros.Vkx.Parser</PackageId>
+    <PackageId>Vakaros.Vkx.Parser.NET</PackageId>
     <Description>Binary parser for Vakaros VKX log files. Decodes all telemetry records (position, wind, depth, speed-through-water, load, temperature, race timer events, and more) into strongly-typed .NET objects.</Description>
     <Authors>SCarlsen7757</Authors>
     <Copyright>Copyright © SCarlsen7757</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>vkx-parser-logo.png</PackageIcon>
-    <PackageProjectUrl>https://github.com/SCarlsen7757/Vakaros.Vkx.Parser</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/SCarlsen7757/Vakaros.Vkx.Parser.NET</PackageProjectUrl>
     <PackageTags>vakaros;vkx;sailing;telemetry;parser</PackageTags>
-    <RepositoryUrl>https://github.com/SCarlsen7757/Vakaros.Vkx.Parser</RepositoryUrl>
+    <RepositoryUrl>https://github.com/SCarlsen7757/Vakaros.Vkx.Parser.NET</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>

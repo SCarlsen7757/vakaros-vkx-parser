@@ -1,4 +1,4 @@
-namespace Vakaros.Vkx.Parser;
+namespace Vakaros.Vkx.Parser.NET;
 
 /// <summary>
 /// Identifies the VKX specification revision a file was written against.

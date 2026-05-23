@@ -1,7 +1,7 @@
 using System.Text;
-using Vakaros.Vkx.Parser.Models;
+using Vakaros.Vkx.Parser.NET.Models;
 
-namespace Vakaros.Vkx.Parser;
+namespace Vakaros.Vkx.Parser.NET;
 
 /// <summary>
 /// Parses VKX binary log files produced by Vakaros devices into a <see cref="VkxSession"/>.

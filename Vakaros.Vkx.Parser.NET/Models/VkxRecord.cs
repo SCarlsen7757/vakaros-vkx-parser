@@ -1,4 +1,4 @@
-namespace Vakaros.Vkx.Parser.Models;
+namespace Vakaros.Vkx.Parser.NET.Models;
 
 /// <summary>Base type for all parsed VKX records.</summary>
 public abstract record VkxRecord

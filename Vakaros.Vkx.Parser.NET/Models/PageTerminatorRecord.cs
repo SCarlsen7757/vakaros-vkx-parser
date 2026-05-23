@@ -1,4 +1,4 @@
-namespace Vakaros.Vkx.Parser.Models;
+namespace Vakaros.Vkx.Parser.NET.Models;
 
 /// <summary>
 /// 0xFE — Page terminator record. Carries the byte length of the preceding page (including

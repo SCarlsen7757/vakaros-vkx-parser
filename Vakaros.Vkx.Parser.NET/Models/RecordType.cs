@@ -1,4 +1,4 @@
-namespace Vakaros.Vkx.Parser.Models;
+namespace Vakaros.Vkx.Parser.NET.Models;
 
 /// <summary>Identifies the type of a VKX record by its 1-byte key.</summary>
 public enum RecordType : byte

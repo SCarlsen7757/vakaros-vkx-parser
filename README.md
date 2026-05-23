@@ -1,19 +1,19 @@
-# Vakaros.Vkx.Parser
+# Vakaros.Vkx.Parser.NET
 
 A .NET library for parsing Vakaros VKX binary log files into strongly-typed objects.
 
-[![NuGet](https://img.shields.io/nuget/v/Vakaros.Vkx.Parser.svg)](https://www.nuget.org/packages/Vakaros.Vkx.Parser)
+[![NuGet](https://img.shields.io/nuget/v/Vakaros.Vkx.Parser.NET.svg)](https://www.nuget.org/packages/Vakaros.Vkx.Parser.NET)
 
 ## Installation
 
 ```bash
-dotnet add package Vakaros.Vkx.Parser
+dotnet add package Vakaros.Vkx.Parser.NET
 ```
 
 ## Quick Start
 
 ```csharp
-using Vakaros.Vkx.Parser;
+using Vakaros.Vkx.Parser.NET;
 
 // From a file path
 VkxSession session = VkxParser.ParseFile("session.vkx");

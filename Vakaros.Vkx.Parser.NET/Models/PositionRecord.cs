@@ -1,4 +1,4 @@
-namespace Vakaros.Vkx.Parser.Models;
+namespace Vakaros.Vkx.Parser.NET.Models;
 
 /// <summary>
 /// 0x02 — Position, Velocity, and Orientation. Primary telemetry message logged at the

@@ -1,6 +1,6 @@
-using Vakaros.Vkx.Parser.Models;
+using Vakaros.Vkx.Parser.NET.Models;
 
-namespace Vakaros.Vkx.Parser;
+namespace Vakaros.Vkx.Parser.NET;
 
 /// <summary>
 /// Represents a fully parsed VKX log file. All records are available via <see cref="Records"/>;

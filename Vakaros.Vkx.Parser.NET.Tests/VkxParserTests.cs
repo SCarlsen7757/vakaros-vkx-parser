@@ -1,10 +1,10 @@
 using System.Reflection;
 using System.Text;
-using Vakaros.Vkx.Parser;
-using Vakaros.Vkx.Parser.Models;
+using Vakaros.Vkx.Parser.NET;
+using Vakaros.Vkx.Parser.NET.Models;
 using Xunit;
 
-namespace Vakaros.Vkx.Parser.Tests;
+namespace Vakaros.Vkx.Parser.NET.Tests;
 
 /// <summary>
 /// Unit and integration tests for <see cref="VkxParser"/>.

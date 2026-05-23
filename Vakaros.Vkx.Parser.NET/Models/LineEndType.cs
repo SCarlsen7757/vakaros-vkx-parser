@@ -1,4 +1,4 @@
-namespace Vakaros.Vkx.Parser.Models;
+namespace Vakaros.Vkx.Parser.NET.Models;
 
 /// <summary>Identifies which end of the start line was set in a 0x05 record.</summary>
 public enum LineEndType : byte

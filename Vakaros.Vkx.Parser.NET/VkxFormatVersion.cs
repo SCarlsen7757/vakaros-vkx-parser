@@ -1,4 +1,4 @@
-namespace Vakaros.Vkx.Parser;
+namespace Vakaros.Vkx.Parser.NET;
 
 /// <summary>
 /// Named byte constants for every known VKX format-version byte.

@@ -1,4 +1,4 @@
-namespace Vakaros.Vkx.Parser.Models;
+namespace Vakaros.Vkx.Parser.NET.Models;
 
 /// <summary>Race timer event types from the 0x04 record.</summary>
 public enum TimerEventType : byte

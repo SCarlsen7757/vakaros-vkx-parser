@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Vakaros.Vkx.Parser\Vakaros.Vkx.Parser.csproj" />
+    <ProjectReference Include="..\Vakaros.Vkx.Parser.NET\Vakaros.Vkx.Parser.NET.csproj" />
   </ItemGroup>
 
   <ItemGroup>
