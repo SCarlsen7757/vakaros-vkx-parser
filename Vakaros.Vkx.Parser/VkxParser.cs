@@ -9,10 +9,10 @@ namespace Vakaros.Vkx.Parser;
 /// <example>
 /// <code>
 /// // From a file path
-/// VkxLog log = VkxParser.ParseFile("session.vkx");
+/// VkxSession log = VkxParser.ParseFile("session.vkx");
 ///
 /// // From a stream
-/// VkxLog log = VkxParser.Parse(stream);
+/// VkxSession log = VkxParser.Parse(stream);
 ///
 /// // From a byte array
 /// VkxLog log = VkxParser.Parse(bytes);
@@ -45,7 +45,6 @@ public static class VkxParser
         { 0x20, 13 },   // Internal
         { 0x21, 52 },   // Internal
         { 0xFE,  2 },   // Page Terminator
-        { 0xFF,  7 },   // Page Header
     };
 
     /// <summary>Parses a VKX file at the given path.</summary>
@@ -121,6 +120,11 @@ public static class VkxParser
                 continue;
             }
 
+            if (formatVersion == 0 && key != 0xFF)
+                throw new NotSupportedException(
+                    "The VKX file does not begin with a page header (0xFF). " +
+                    "The file may be corrupt or is not a valid VKX file.");
+
             if (!PayloadSizes.ContainsKey(key))
             {
                 if (formatVersion > VkxFormatVersion.MaxKnown)
@@ -134,7 +138,18 @@ public static class VkxParser
                     $"Unknown VKX record key: 0x{key:X2} at stream position {reader.BaseStream.Position - 1}.");
             }
 
-            var record = ParseRecord(reader, key);
+            VkxRecord? record;
+            try
+            {
+                record = ParseRecord(reader, key);
+            }
+            catch (EndOfStreamException)
+            {
+                // Stream ended mid-payload (e.g. file copied while still being written).
+                isPartial = true;
+                break;
+            }
+
             if (record is not null)
                 records.Add(record);
         }
@@ -282,7 +297,7 @@ public static class VkxParser
             IsPort = tackId == 1,
             IsManual = setBy == 1,
             TrueHeading = trueHeading,
-            SpeedOverGround = sog,
+            SpeedOverGroundKnots = sog,
         };
     }
 

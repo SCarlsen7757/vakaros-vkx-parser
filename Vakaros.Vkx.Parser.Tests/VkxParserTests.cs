@@ -91,6 +91,28 @@ public class VkxParserTests
     }
 
     [Fact]
+    public void MissingPageHeader_ThrowsNotSupportedException()
+    {
+        // A stream that starts directly with a record key (no 0xFF page header).
+        var data = Build(bw =>
+        {
+            bw.Write((byte)0x02); // position key
+            bw.Write(1_000_000_000_000UL);
+            bw.Write(537_000_000);
+            bw.Write(100_000_000);
+            bw.Write(2.5f);
+            bw.Write(1.2f);
+            bw.Write(3.0f);
+            bw.Write(1.0f);
+            bw.Write(0.1f);
+            bw.Write(0.2f);
+            bw.Write(0.3f);
+        });
+
+        Assert.Throws<NotSupportedException>(() => ParseBytes(data));
+    }
+
+    [Fact]
     public void Version_1_4_ParsesSuccessfully()
     {
         var data = Build(bw => WritePageHeader(bw, VkxFormatVersion.V1_4));
@@ -133,6 +155,24 @@ public class VkxParserTests
         var session = ParseBytes(data);
         Assert.False(session.IsPartial);
         Assert.Equal(2, session.Records.Count); // header + wind
+    }
+
+    [Fact]
+    public void TruncatedPayload_ReturnsPartialSession()
+    {
+        // Write a valid header then a position key (0x02) with only 4 bytes instead of 44.
+        var data = Build(bw =>
+        {
+            WritePageHeader(bw);
+            bw.Write((byte)0x02);
+            bw.Write((int)42); // 4 bytes — payload is incomplete (needs 44)
+        });
+
+        var session = ParseBytes(data);
+        Assert.True(session.IsPartial);
+        // Page header was collected before truncation.
+        Assert.Single(session.Records);
+        Assert.IsType<PageHeaderRecord>(session.Records[0]);
     }
 
     // ── Page records ──────────────────────────────────────────────────────────
@@ -273,12 +313,14 @@ public class VkxParserTests
         Assert.Equal(lon, record.Longitude);
     }
 
-    [Fact]
-    public void ParsesShiftAngleRecord()
+    [Theory]
+    [InlineData(1, 0, true,  false)]   // port / auto
+    [InlineData(0, 0, false, false)]   // starboard / auto
+    [InlineData(1, 1, true,  true)]    // port / manual
+    [InlineData(0, 1, false, true)]    // starboard / manual
+    public void ParsesShiftAngleRecord(byte tackId, byte setBy, bool expectedIsPort, bool expectedIsManual)
     {
         const ulong ts = 1_000_000_000_000UL;
-        const byte tackId = 1;  // port
-        const byte setBy = 0;   // auto
         const float heading = 45.0f;
         const float sog = 3.5f;
 
@@ -297,10 +339,10 @@ public class VkxParserTests
         var record = Assert.Single(session.Records.OfType<ShiftAngleRecord>());
 
         Assert.Equal(DateTimeOffset.FromUnixTimeMilliseconds((long)ts), record.Timestamp);
-        Assert.True(record.IsPort);
-        Assert.False(record.IsManual);
+        Assert.Equal(expectedIsPort, record.IsPort);
+        Assert.Equal(expectedIsManual, record.IsManual);
         Assert.Equal(heading, record.TrueHeading);
-        Assert.Equal(sog, record.SpeedOverGround);
+        Assert.Equal(sog, record.SpeedOverGroundKnots);
     }
 
     [Fact]
@@ -322,6 +364,28 @@ public class VkxParserTests
         var record = Assert.Single(session.Records.OfType<DeviceConfigurationRecord>());
 
         Assert.True(record.IsFixedToBodyFrame);
+        Assert.Equal(loggingRate, record.TelemetryLoggingRate);
+    }
+
+    [Fact]
+    public void ParsesDeviceConfigurationRecord_NotFixed()
+    {
+        const uint bitfield = 0x00; // IsFixedToBodyFrame = false
+        const byte loggingRate = 5;
+
+        var data = Build(bw =>
+        {
+            WritePageHeader(bw);
+            bw.Write((byte)0x08);
+            bw.Write(0UL);
+            bw.Write(bitfield);
+            bw.Write(loggingRate);
+        });
+
+        var session = ParseBytes(data);
+        var record = Assert.Single(session.Records.OfType<DeviceConfigurationRecord>());
+
+        Assert.False(record.IsFixedToBodyFrame);
         Assert.Equal(loggingRate, record.TelemetryLoggingRate);
     }
 
@@ -415,6 +479,28 @@ public class VkxParserTests
 
         Assert.Equal(DateTimeOffset.FromUnixTimeMilliseconds((long)ts), record.Timestamp);
         Assert.Equal(name, record.SensorName);
+        Assert.Equal(load, record.Load);
+    }
+
+    [Fact]
+    public void ParsesLoadRecord_WithNullPaddedShortName()
+    {
+        const ulong ts = 1_000_000_000_000UL;
+        const float load = 100.0f;
+
+        var data = Build(bw =>
+        {
+            WritePageHeader(bw);
+            bw.Write((byte)0x0F);
+            bw.Write(ts);
+            bw.Write(Encoding.ASCII.GetBytes("JIB\0")); // 3 chars + null padding
+            bw.Write(load);
+        });
+
+        var session = ParseBytes(data);
+        var record = Assert.Single(session.Records.OfType<LoadRecord>());
+
+        Assert.Equal("JIB", record.SensorName);
         Assert.Equal(load, record.Load);
     }
 
@@ -550,5 +636,75 @@ public class VkxParserTests
         Assert.NotEmpty(session.Records);
         Assert.NotEmpty(session.PositionRecords);
         Assert.False(session.IsPartial);
+    }
+
+    // ── Error handling ────────────────────────────────────────────────────────
+
+    [Fact]
+    public void KnownVersion_WithUnknownKey_ThrowsFormatException()
+    {
+        var data = Build(bw =>
+        {
+            WritePageHeader(bw, VkxFormatVersion.V1_4);
+            bw.Write((byte)0x99); // Unknown key not in the V1.4 spec.
+        });
+
+        Assert.Throws<FormatException>(() => ParseBytes(data));
+    }
+
+    // ── ParseFile overload ────────────────────────────────────────────────────
+
+    [Fact]
+    public void ParseFile_ReturnsValidSession()
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+        var resourceName = assembly.GetManifestResourceNames()
+            .Single(n => n.EndsWith(".vkx", StringComparison.OrdinalIgnoreCase));
+
+        using var resourceStream = assembly.GetManifestResourceStream(resourceName)!;
+        var tempPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".vkx");
+        try
+        {
+            using (var file = File.Create(tempPath))
+                resourceStream.CopyTo(file);
+
+            var session = VkxParser.ParseFile(tempPath);
+
+            Assert.Equal(VkxFormatVersion.V1_4, session.FormatVersion);
+            Assert.Equal(VkxSpecVersion.V1_4, session.SpecVersion);
+            Assert.NotEmpty(session.Records);
+            Assert.False(session.IsPartial);
+        }
+        finally
+        {
+            File.Delete(tempPath);
+        }
+    }
+
+    // ── Multiple records of same type ─────────────────────────────────────────
+
+    [Fact]
+    public void MultipleRecordsOfSameType_AreAllParsed()
+    {
+        const ulong ts = 1_000_000_000_000UL;
+
+        var data = Build(bw =>
+        {
+            WritePageHeader(bw);
+            // First Wind record
+            bw.Write((byte)0x0A);
+            bw.Write(ts);
+            bw.Write(90.0f);
+            bw.Write(3.0f);
+            // Second Wind record
+            bw.Write((byte)0x0A);
+            bw.Write(ts + 1000UL);
+            bw.Write(180.0f);
+            bw.Write(5.0f);
+        });
+
+        var session = ParseBytes(data);
+
+        Assert.Equal(2, session.WindRecords.Count());
     }
 }

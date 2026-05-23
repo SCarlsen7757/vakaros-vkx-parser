@@ -27,5 +27,5 @@ public record ShiftAngleRecord : VkxRecord
     public float TrueHeading { get; init; }
 
     /// <summary>Average Speed Over Ground on this tack in knots.</summary>
-    public float SpeedOverGround { get; init; }
+    public float SpeedOverGroundKnots { get; init; }
 }

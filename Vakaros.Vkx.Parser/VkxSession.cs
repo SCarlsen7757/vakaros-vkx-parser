@@ -23,9 +23,20 @@ public sealed class VkxSession
     public byte FormatVersion { get; }
 
     /// <summary>
-    /// <see langword="true"/> when parsing stopped early because the file uses a format version
-    /// newer than <see cref="VkxFormatVersion.MaxKnown"/> and an unrecognised record key was
-    /// encountered. Records collected before the unknown key are available via <see cref="Records"/>.
+    /// The VKX specification revision this file was written against, derived from
+    /// <see cref="FormatVersion"/>. Returns <see cref="VkxSpecVersion.Unknown"/> when
+    /// the format version byte does not match any known revision.
+    /// </summary>
+    public VkxSpecVersion SpecVersion => VkxFormatVersion.ToSpecVersion(FormatVersion);
+
+    /// <summary>
+    /// <see langword="true"/> when parsing stopped early and the session contains only the records
+    /// collected up to the stopping point. This happens in two cases:
+    /// <list type="bullet">
+    ///   <item>The file uses a format version newer than <see cref="VkxFormatVersion.MaxKnown"/> and
+    ///   an unrecognised record key was encountered.</item>
+    ///   <item>The stream ended mid-payload (e.g. a file that was still being written when copied).</item>
+    /// </list>
     /// </summary>
     public bool IsPartial { get; }
 
